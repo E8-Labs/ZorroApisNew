@@ -1,0 +1,24 @@
+
+.menu_item{  font-size: 18px; margin-top: 4px;  border-radius: 20px; text-align: center;  }
+.menu_item:hover{ background-color: #ddd; color:black;    }
+.menu_item a{  color:  #aaa;  }
+
+.menu_item_selcted{font-size: 18px; margin-top: 4px;  border-radius: 20px; background-color:  #3a91d9;
+ border-bottom: solid 1px #ddd ; font-weight: bold;   }
+ .menu_item_selcted a{  color:white;  }
+
+.page_title {   font-size: 30px; margin-top: 4px;   border-bottom: solid 1px #ddd; width: 100%;
+font-weight: bold; color:  #aaa;   }
+
+.page_title_sub {   font-size: 18px;  text-align: center;font-weight: bold; color:  #aaa;   }
+
+.page_instruction {   font-size: 15px;  text-align: center; color:  #aaa;   }
+
+#tb_options { display: none;}
+  #side_menu {display:inline;}
+
+ @media (max-width: 750px) {
+  
+  #tb_options {display:inline;}
+  #side_menu {display:none;}
+ }
