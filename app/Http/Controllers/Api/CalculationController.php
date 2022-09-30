@@ -260,7 +260,7 @@ class CalculationController extends ParentController
             
             //LoanSection::ConformingFixed
             $years = $this->getYearTermValue($loanTypeId);
-
+            $numberOfPayments = 12 * $years;
 
             $lenders = Lender::whereIn('id', $this->lender_ids)->get();//where('id', 2)->
             // return $lenders;
@@ -494,6 +494,7 @@ class CalculationController extends ParentController
             
             //LoanSection::ConformingFixed
             $years = $this->getYearTermValue($loanTypeId);
+            $numberOfPayments = 12 * $years;
             
             $lenders = Lender::whereIn('id', $this->lender_ids)->get();//where('id', 2)->
             
