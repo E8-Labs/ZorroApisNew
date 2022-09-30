@@ -887,7 +887,8 @@ function multipleSubsectionsSelection($section,$propertyType,$typeOfUse, $ltv, $
                              "total_interest_to_pay" =>  abs($this->roundFloat($result->totalInterestToPay)),
                              "loan_amount" =>  $this->roundFloat($loan_amount),
                              "cost_or_credit" => 0,
-                             "calculation_detail" => $result->calculationDetail ] ;
+                             // "calculation_detail" => $result->calculationDetail 
+                         ] ;
             }
             else
             {
@@ -899,7 +900,8 @@ function multipleSubsectionsSelection($section,$propertyType,$typeOfUse, $ltv, $
                  "total_interest_to_pay" =>  abs($this->roundFloat($result->totalInterestToPay)),
                  "loan_amount" => $this->roundFloat($loan_amount),
                  "cost_or_credit" => 0,
-                 "calculation_detail" => $result->calculationDetail ] ;
+                 // "calculation_detail" => $result->calculationDetail 
+             ] ;
             }
           
             return $result;
@@ -934,12 +936,14 @@ function multipleSubsectionsSelection($section,$propertyType,$typeOfUse, $ltv, $
                              "total_interest_to_pay" =>  $this->roundFloat($result->totalInterestToPay),
                              "loan_amount" => $this->roundFloat($loan_amount),
                              "cost_or_credit" => 0,
-                             "calculation_detail" => $result->calculationDetail ] ;
+                             // "calculation_detail" => $result->calculationDetail 
+                         ] ;
             return $result;
    }
 
        function getLoanWithSection($section,$lender_id,$ltv,$monthly_private_mortgage_insurance,$creditScore,$loan_amount,$numberOfPayments, $existingRate ,$loan_start_date,  $downPayment = 0 ,$costOrCredit, $loan_type_id = 1, $loan_category, $year){
             // $costOrCredit = $costOrCredit;
+        // return "here";
             $result = new CalculationResult;
             $actual_loan_amount = $loan_amount - $downPayment;
             if($existingRate == -1 ){ // new loan
@@ -1027,7 +1031,7 @@ function multipleSubsectionsSelection($section,$propertyType,$typeOfUse, $ltv, $
                     "total_interest_to_pay" =>  $this->roundFloat($result->totalInterestToPay),
                     "loan_amount" =>  $this->roundFloat($actual_loan_amount),
                     "cost_or_credit" => $costOrCredit,
-                    "calculation_detail" => $result->calculationDetail
+                    // "calculation_detail" => $result->calculationDetail
                   ];
                 }
                 else
@@ -1040,7 +1044,7 @@ function multipleSubsectionsSelection($section,$propertyType,$typeOfUse, $ltv, $
                     "total_interest_to_pay" =>  $this->roundFloat($result->totalInterestToPay),
                     "loan_amount" => $this->roundFloat($actual_loan_amount),
                     "cost_or_credit" => $costOrCredit,
-                    "calculation_detail" => $result->calculationDetail,
+                    // "calculation_detail" => $result->calculationDetail,
                     "all_rates" => $result->rates];
 
                 }
