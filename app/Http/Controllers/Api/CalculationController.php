@@ -22,7 +22,7 @@ class CalculationController extends ParentController
     use CalculationTrait;
 
     var $LENDER = "lender";
-    var $lender_ids = [1,2,3];
+    var $lender_ids = [1,2,3]; // this is an update
     var $NEW_LOAN = "new_loan";
     var $LOW_COST_LOAN = "low_cost";
     var $LOW_RATE_LOAN = "low_rate";
