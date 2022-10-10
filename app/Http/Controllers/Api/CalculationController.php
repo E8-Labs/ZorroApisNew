@@ -308,7 +308,7 @@ class CalculationController extends ParentController
                     // return "here";
                 $result_Response = $this->getLoanWithSection($section,$lender_id,$ltv,$monthly_private_mortgage_insurance,$creditScore, $loanAmount + $downPayment , $numberOfPayments, $this->TEMP_LOW_RATE_LOAN_VALUE,"",$downPayment, "", $loanTypeId, LoanCategory::Premium_New, $years);
                 // return "here";
-                
+                // return ["data" => $result_Response];
                     if (is_array($result_Response) && isset($result_Response["message"])){ // if it is an error message then array
                             $errorsForLender[] = $result_Response["message"];
                     }
@@ -327,6 +327,7 @@ class CalculationController extends ParentController
                     if($sheet_type == LoanSection::JmacManhattanJumbo && $lender->id == 1){
                       // echo "Calculate Purchase";
                           $section= $this->multipleSubsectionsSelection(LoanSection::JMAC_LAGUNA_JUMBO_FIXED_ARMS_PURCHASE , $propretyTypeId,$useTypeId, $ltv, $years,       $loanAmount);
+                          // return $section;
                           // return "here 2";
         $det = $det . "\nLender Name => " . $lender->name . "\n Sheet : " . LoanSection::JMAC_LAGUNA_JUMBO_FIXED_ARMS_PURCHASE . " \n LTV : " . $ltv . "\n";
                     $count = count($section);
