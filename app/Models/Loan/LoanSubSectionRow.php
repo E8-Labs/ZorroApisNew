@@ -52,7 +52,7 @@ const CondoSimple = "Condo";
   public $section;
 
 
-  function __construct($section, $subSection, $row) {
+  function __construct($section = NULL, $subSection = NULL, $row = NULL) {
       $this->row = $row;
       $this->subSection = $subSection;
       $this->section = $section;
