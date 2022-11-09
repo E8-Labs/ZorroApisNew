@@ -37,6 +37,15 @@ trait CalculationTrait {
         if($loan_type_id == 5){//Arm5_1Fixed
             return 51;
         }
+        if($loan_type_id == 7){//15 YR Fixed
+            return 15;
+        }
+        if($loan_type_id == 8){//10 YR Fixed
+            return 10;
+        }
+        if($loan_type_id == 9){//25  YR Fixed
+            return 25;
+        }
     }
 
     function getSectionFromLoan($loan_amount, $property_type, $lender_id = 1){
@@ -321,6 +330,11 @@ function multipleSubSectionSelectionRocketPro($section,$propertyType,$typeOfUse,
       // return "Rocket Pro Highg balance";
         $loanLimit =  new LoanSubSectionRow($section,LoanSubSection::PropertyType, LoanSubSectionRow::HighBalanceAddOn);
         array_push($sub, $loanLimit);
+
+
+        // These are the same adjustments that are for Comforming Loans
+        $loanLimit =  new LoanSubSectionRow($section,LoanSubSection::LoanAmountType, LoanSubSectionRow::RocketProLoanLimit);
+        array_push($sub, $loanLimit);
         
         return $sub;
     }
@@ -434,8 +448,14 @@ function multipleSubsectionsSelection($section,$propertyType,$typeOfUse, $ltv, $
                 $l =  new LoanSubSectionRow($section,LoanSubSection::Others, LoanSubSectionRow::Other );
                 // $sub[$i] = $l;
                 array_push($sub, $l);
+                return $sub;
                 // $i ++;
         }
+        // echo "JMAC";
+        // None applies so just add dummy to get section and sub section values for this
+        $l =  new LoanSubSectionRow($section,LoanSubSection::Others, LoanSubSectionRow::Other );
+        array_push($sub, $l);
+        return $sub;
     }
     else if($typeOfUse == LoanUseType::Secondary){
         // $i = 0;
@@ -951,7 +971,8 @@ function multipleSubsectionsSelection($section,$propertyType,$typeOfUse, $ltv, $
             
                 $result->ltv = $this->getLtvToValue($ltv);
                 $result->creditScore = $this->getCreditScoreWithSection( $creditScore , $result->ltv , $lender_id , $section, $actual_loan_amount, $loan_category, $year);
-                // echo $result->creditScore;
+                // echo json_encode(["credit" => $result->creditScore]);
+                // die();
                 $csValue = 0;
                 foreach($result->creditScore as $cs){
                     if(isset($cs->value)){
@@ -964,20 +985,22 @@ function multipleSubsectionsSelection($section,$propertyType,$typeOfUse, $ltv, $
                     }
                     
                 }
-                
+                // echo $csValue;
+                // die();
                 // return $result->creditScore;
                 
                 // echo $result->creditScore;
                 // return response()->json([$this->DATA => $result->creditScore, $this->SUCCESS => true, $this->MSG => ""], 200);
                 $result->rates = $this->getRatesWithSection($result->creditScore,$lender_id, $section, $loan_type_id );
                 // echo json_encode($result->rates);
+                // die();
                 if(count($result->rates) == 0){
                     return ["status"=> false, "message" => "Loan is invalid. No rates."];
                 }
                 $result->lowestRate = $this->getValueClosest(0, $result->rates, $actual_loan_amount);
                 
-                // return $result->rates;
-
+                // echo $result->lowestRate;
+                // die();
                 ///////////////////////////////////////////////////////////////////////////////////////
                 
                 $result->optimal_costOrCredit = (($result->lowestRate->value) * ( $actual_loan_amount  ))/100;
@@ -986,6 +1009,21 @@ function multipleSubsectionsSelection($section,$propertyType,$typeOfUse, $ltv, $
                 //  $result->rates = array_reverse($result->rates);
 
                 $this->calculateLowRate($result, $result->rates, $result->optimal_rate, $actual_loan_amount);
+                // $temp_low_rate_costOrCredit = $result->low_rate_costOrCredit;
+                // // echo $temp_low_rate_costOrCredit;
+                // if($result->low_rate_costOrCredit < 0 ){
+                //     $temp_low_rate_costOrCredit *= -1;
+                // }
+                // while($temp_low_rate_costOrCredit < 3000){
+                //     echo "Calculating again";
+                //     $this->calculateLowRate($result, $result->rates, $result->optimal_rate, $actual_loan_amount);
+                //     $temp_low_rate_costOrCredit = $result->low_rate_costOrCredit;
+                // // echo $temp_low_rate_costOrCredit;
+                //     if($result->low_rate_costOrCredit < 0 ){
+                //         $temp_low_rate_costOrCredit *= -1;
+                //     }
+                // }
+                // echo "Cost/Credit " . $result->low_rate_costOrCredit;
                 $this->calculateOptimal($result, $result->rates, $result->low_rate_rate, $actual_loan_amount );
                 $this->calculateLowCost($result, $result->rates, $result->optimal_rate, $actual_loan_amount );
 
@@ -1068,7 +1106,8 @@ function multipleSubsectionsSelection($section,$propertyType,$typeOfUse, $ltv, $
    }
 
     function calculateLowRate($result, $rates, $optimal_rate, $actual_loan_amount ){ //  $actual_loan_amount = $loan_amount - $downPayment;
-    
+        // echo "Rate Closest To Zero " . $optimal_rate;
+        // die();
         $csValue = 0;
         foreach($result->creditScore as $cs){
             if(isset($cs->value)){
@@ -1082,51 +1121,60 @@ function multipleSubsectionsSelection($section,$propertyType,$typeOfUse, $ltv, $
     // }
 
       $previousRate = $rates[0];
-      $nextRate = $rates[0];
+      // $nextRate = $rates[0];
       for ($i=0; $i < count($rates) ; $i++) {
-          if( $i > 0 ){
-            $previousRate = $rates[$i - 1];
-            // echo "previous rate " . $previousRate;
-            // die();
-          }
-          if($rates[$i]->rate == $optimal_rate){
-
-            if(($i + 1) < count($rates)){
-              $nextRate = $rates[$i + 1];
-            }
+                // echo "Running for Rate " . $rates[$i]->rate . " ";
+          if($rates[$i]->rate <= $optimal_rate){ // <= the closest to zero value so we don't get values above that.
+            // if( $i > 0 ){
+            $previousRate = $rates[$i];
+            // }
+            // if(($i + 1) < count($rates)){
+            //   $nextRate = $rates[$i + 1];
+            // }
             // echo "Break : "  . $previousRate;
             // die();
-            break;
+            $result->low_rate_costOrCredit = (($previousRate->value) * ( $actual_loan_amount  ))/100;
+            $result->low_rate_rate = $previousRate->rate;
+            // echo "Value for rate " . $previousRate->rate . " is " . $result->low_rate_costOrCredit;
+            $temp_low_rate_costOrCredit = $result->low_rate_costOrCredit;
+            // echo $temp_low_rate_costOrCredit;
+            if($result->low_rate_costOrCredit < 0 ){
+              $temp_low_rate_costOrCredit *= -1;
+            }
+        // echo "Rate " . $previousRate->rate . " gives " . $temp_low_rate_costOrCredit . "\n";
+            if($temp_low_rate_costOrCredit <= 3000 ) {
+              // echo "gr th 3000";
+            
+                // $result->low_rate_costOrCredit = $result->optimal_costOrCredit;
+                // $result->low_rate_rate = $result->optimal_rate;
+        
+        
+                // $result->optimal_costOrCredit = (($nextRate->value) * ( $actual_loan_amount  ))/100;
+                // $result->optimal_rate = $nextRate->rate;
+        // echo "Temp Cost Credit " . $temp_low_rate_costOrCredit;
+        // die();
+                break;
+            }
+            // break;
           }
       }
       // echo $previousRate;
       // echo $nextRate;
+      // echo json_encode($rates);
+      // die();
       // echo $optimal_rate;
       //question here. Do we add all adjustments and then multiply that with loan amount or what?
-      $result->low_rate_costOrCredit = (($previousRate->value) * ( $actual_loan_amount  ))/100;
-      $result->low_rate_rate = $previousRate->rate;
+      
 
-      $temp_low_rate_costOrCredit = $result->low_rate_costOrCredit;
-      // echo $temp_low_rate_costOrCredit;
-      if($result->low_rate_costOrCredit < 0 ){
-        $temp_low_rate_costOrCredit *= -1;
-      }
-
-      if($temp_low_rate_costOrCredit > 3000 ) {
-        // echo "gr th 3000";
-
-          $result->low_rate_costOrCredit = $result->optimal_costOrCredit;
-          $result->low_rate_rate = $result->optimal_rate;
-
-
-          $result->optimal_costOrCredit = (($nextRate->value) * ( $actual_loan_amount  ))/100;
-          $result->optimal_rate = $nextRate->rate;
-
-
-      }
+      // else{
+      //    // if it is lower than 3000
+      //       $this->calculateLowRate($result, $rates, $previousRate->value, $actual_loan_amount );
+      // }
     }
 
     function calculateOptimal($result, $rates, $low_rate, $actual_loan_amount ){ //  $actual_loan_amount = $loan_amount - $downPayment;
+        // echo $low_rate;
+        // die();
         $csValue = 0;
         foreach($result->creditScore as $cs){
             if(isset($cs->value)){
@@ -1137,6 +1185,7 @@ function multipleSubsectionsSelection($section,$propertyType,$typeOfUse, $ltv, $
       for ($i=0; $i < count($rates) ; $i++) {
 
           if($rates[$i]->rate == $low_rate){
+            // echo  "rates[" . $i . "] = " . $low_rate;
             if(($i + 1) < count($rates)){
               $nextRate = $rates[$i + 1];
             }else{
@@ -1145,7 +1194,8 @@ function multipleSubsectionsSelection($section,$propertyType,$typeOfUse, $ltv, $
             break;
           }
       }
-
+// echo json_encode(["next" => $nextRate, "low" => $low_rate, "rates" => $rates]);
+// die();
       $result->optimal_costOrCredit = (($nextRate->value) * ( $actual_loan_amount  ))/100;
       $result->optimal_rate = $nextRate->rate;
 
@@ -1221,8 +1271,16 @@ function multipleSubsectionsSelection($section,$propertyType,$typeOfUse, $ltv, $
         $rates = Rate::select("rate", "value", "id" )->where("lender_id", $lender_id)->where('day_type_id', 3)
         ->where("loan_section_id", $section->section)->where('year_type_id', $year_type_id)
         // ->where("loan_sub_section_id", $section->subSection)
-        ->get()->map(function ($rate) use($csValue, $deduct) {
-                                    $rate->value = ($rate->value - $deduct) + $csValue;//$creditScore->value;
+        ->get()->map(function ($rate) use($csValue, $deduct, $lender_id) {
+            $rate->valueBeforAdon = $rate->value;
+                                    if($lender_id == 2 || $lender_id == 3){
+                                        $rate->value = ($deduct - $rate->value) + $csValue;//
+                                    }
+                                    else{
+                                        $rate->value = ($rate->value - $deduct) + $csValue;//
+                                    }
+
+                                    $rate->adon = $csValue;
                                     return $rate;
                                 })
                   ->sortBy('rate');
@@ -1381,7 +1439,8 @@ $scores = [];
     // $scores["cs"] = $creditScore;
     // $scores["section"] = $section->section;
     // $scores["sub section"] = $section->subSection;
-    
+    // echo json_encode(["adons" => $scores]);
+    // die();
       return $scores;
 
      // if($section->subSection == LoanSubSection::Others ){
@@ -1394,6 +1453,9 @@ $scores = [];
    }
 
   function  calculateMonthlyPayment($loan_amount, $numberOfPayments , $monthlyPaymentsRate ){
+    // echo "number " . $numberOfPayments;
+    // echo "monthly " . $monthlyPaymentsRate;
+    // die();
         return $loan_amount / (  ( ( pow(1+$monthlyPaymentsRate , $numberOfPayments ))-1 ) /   ($monthlyPaymentsRate  * pow (1+$monthlyPaymentsRate ,$numberOfPayments))  );
     }
 
@@ -1411,7 +1473,8 @@ $scores = [];
              $closestIndex = $i;
           }
        }
-      //  echo $closest;
+       // echo $closest;
+       // die();
       // for($i = $closestIndex - 1; $i >= 0; $i--){
       //     $item = $arr[$i];
       //     $costOrCredit = abs(($item->value * ( $loan_amount  ))/100);
@@ -1421,6 +1484,7 @@ $scores = [];
       //     }
       // }
 // echo $closest;
+// die();
        // foreach ($arr as $item) {
        //    if ($closest === null || abs($search - $closest->value) > abs($item->value - $search)) {
        //       $closest = $item;
@@ -1429,6 +1493,7 @@ $scores = [];
        if($closest == NULL){
            return count($arr);
        }
+
         return $closest;
     }
 

@@ -22,7 +22,7 @@ class CalculationController extends ParentController
     use CalculationTrait;
 
     var $LENDER = "lender";
-    var $lender_ids = [1,2,3];
+    var $lender_ids = [1,2,3]; // this is an update
     var $NEW_LOAN = "new_loan";
     var $LOW_COST_LOAN = "low_cost";
     var $LOW_RATE_LOAN = "low_rate";
@@ -285,7 +285,8 @@ class CalculationController extends ParentController
                 //return "here";
                 $section= $this->multipleSubsectionsSelection($sheet_type , $propretyTypeId,$useTypeId, $ltv, $years, $loanAmount, LoanCategory::Premium_New, $lender_id);
                 // return "here";
-                // return $section;
+                // echo json_encode(["sections" => $section, "count" => count($section), "empty"=> empty($section)]);
+                // die();
                 // return $sheet_type;
                 $isvalidJumbo = $this->isValidJumboLoan($sheet_type, $years);
                 if($isvalidJumbo == false){
@@ -293,14 +294,15 @@ class CalculationController extends ParentController
                     return response()->json([$this->MSG  => "Jumbo loans are only allowed for 30 year terms." ,$this->SUCCESS => false, $this->DATA => NULL], 200);
                 }
                 $errorsForLender = array();
-                if($section != NULL){
+                if($section !== NULL){
+                    // echo "Section not null";
                     $det = $det . "\nLender Name => " . $lender->name . "\n Sheet : " . $sheet_type . " \n LTV : " . $ltv . "\n";
                     $count = count($section);
                     for($i = 0; $i < $count; $i++){
                         $sec = $section[$i];
                         $det = $det . $sec->detail() . " LTV : " . $ltv . " cs " . $creditScore . "\n";
                     }
-                // return  $det;
+                 // echo  $det;
             //     $cs = $this->getCreditScoreWithSection( $creditScore , $ltv , $lender_id , $section, $loanAmount, LoanCategory::Premium_Existing, $years);
             //   return response()->json([$this->DATA => $cs, $this->SUCCESS => true,$this->MSG => $det . $sheet_type], 200);
 
@@ -308,7 +310,7 @@ class CalculationController extends ParentController
                     // return "here";
                 $result_Response = $this->getLoanWithSection($section,$lender_id,$ltv,$monthly_private_mortgage_insurance,$creditScore, $loanAmount + $downPayment , $numberOfPayments, $this->TEMP_LOW_RATE_LOAN_VALUE,"",$downPayment, "", $loanTypeId, LoanCategory::Premium_New, $years);
                 // return "here";
-                // return ["data" => $result_Response];
+                // echo json_encode( ["data" => $result_Response] );
                     if (is_array($result_Response) && isset($result_Response["message"])){ // if it is an error message then array
                             $errorsForLender[] = $result_Response["message"];
                     }
@@ -356,7 +358,7 @@ class CalculationController extends ParentController
                           }
                     }
     
-                     if($lowest == false){
+                     if($lowest == false && $resultOptimal_Response->data["rate"] != $resultLowCost_Response->data["rate"] && $resultLowCost_Response->data["rate"] != $result_Response->data["rate"]){//$resultOptimal_Response->data["rate"]
                           // $det = $det . " \nNew Lender \n";
                             $lowest = true;
                             $resultOptimal = $resultOptimal_Response;
@@ -365,7 +367,7 @@ class CalculationController extends ParentController
                             $sheet_type_Response = $sheet_type;
                             $lender_Response = $lender;
                         }
-                        else if($resultOptimal_Response->data["rate"] < $resultOptimal->data["rate"]){ 
+                        else if($resultOptimal_Response->data["rate"] != $resultLowCost_Response->data["rate"] && $resultLowCost_Response->data["rate"] != $result_Response->data["rate"] && $resultOptimal_Response->data["rate"] < $resultOptimal->data["rate"]){ 
                           $det = $det . " \n" . $lender_Response->name . " > " . $lender->name . "\n"; 
                           $lowest = true;
                             $resultOptimal = $resultOptimal_Response;
@@ -379,6 +381,8 @@ class CalculationController extends ParentController
                 }
                 else{
                     $errorsForLender[] = "Loan is invalid";
+//                    echo " This doesn't have sections";
+                    $errorArray[$lender->name] = $errorsForLender;
                 }
 
               }
@@ -392,7 +396,8 @@ class CalculationController extends ParentController
             ////////////////////////////////////////////////////////////////
               // $result == optimal 
               // return "here 2";
-              $loan_option_id = LoanOption::LowRate; $loan_parent_id = null;
+              try{
+                $loan_option_id = LoanOption::LowRate; $loan_parent_id = null;
              $loan = Loan::saveLoan($user->id,LoanCategory::Premium_New, $lender_id,$resultOptimal->requiredMonthlyPayment,(float)$resultOptimal->data["rate"], $resultOptimal->totalAmountToPay, $downPayment, $creditScore,$loanAmount, $zipCode,$propretyTypeId,$loanTypeId, $useTypeId,
               $loan_option_id, $loan_parent_id, $propertyValue );
               
@@ -405,6 +410,10 @@ class CalculationController extends ParentController
               $loan_option_id = LoanOption::LowCost; $loan_parent_id = $loan->id;
              Loan::saveLoan($user->id,LoanCategory::Premium_New, $lender_id,$resultLowCost->requiredMonthlyPayment,(float)$resultLowCost->data["rate"], $resultLowCost->totalAmountToPay, $downPayment, $creditScore,$loanAmount, $zipCode,$propretyTypeId,$loanTypeId, $useTypeId,
               $loan_option_id, $loan_parent_id, $propertyValue );
+              }
+              catch(\Exception $e){
+                return response()->json([$this->DATA => NULL,$this->SUCCESS => true,$this->MSG => "No Matching Loan Found", "Exception" => $e->getMessage()], 200);
+              }
              // return $resultOptimal->data;
               
                $data = [
@@ -534,12 +543,13 @@ class CalculationController extends ParentController
                 }
                 $section= $this->multipleSubsectionsSelection($sheet_type , $propretyTypeId,$useTypeId, $ltv, $years, $loanAmount, LoanCategory::Premium_Existing, $lender_id); // pass lender id 
                 $errorsForLender = array();
-                if($section == NULL){
+                if($section === NULL){
                     $errorsForLender[] = "Loan is invalid";
                     // return response()->json([$this->MSG  => "". $lender_id. " Sheet ". $sheet_type . " Is NULL"  ,$this->SUCCESS => false, $this->DATA => $section], 200);// . " is valid jumbo " . $isvalidJumbo;
                 }
                 else{
                     $section_response = $section;
+                    // echo "here";
                     // return response()->json([$this->MSG  => "". $lender_id. " Sheet ". $sheet_type  ,$this->SUCCESS => false, $this->DATA => $section], 200);// . " is valid jumbo " . $isvalidJumbo;
                 
                 // $det = $det . "\nLender Name => " . $lender->name . "\n Sheet : " . $sheet_type . " \n LTV : " . $ltv . "  | " . count($section) . "\n";
@@ -559,7 +569,8 @@ class CalculationController extends ParentController
             //   return "Downpayment is " . $downPayment;
                 $result = $this->getLoanWithSection($section,$lender_id,$ltv,$monthly_private_mortgage_insurance,$creditScore, $loanAmount , $numberOfPayments, $this->TEMP_LOW_RATE_LOAN_VALUE,$loan_start_date,$downPayment, 0, $loanTypeId, LoanCategory::Premium_Existing, $years);
                 $lenderAddOns[$lender->name] = $result;
-                //   return response()->json([$this->DATA => $result,$this->SUCCESS => true,$this->MSG => $lender->name . " => " . $sheet_type], 200);
+                // echo json_encode(["res" => $result]);
+                  // return response()->json([$this->DATA => $result,$this->SUCCESS => true,$this->MSG => $lender->name . " => " . $sheet_type], 200);
                     if (is_array($result) && isset($result["message"])){ // if it is an error message then array
                         $errorsForLender[] = $result["message"];
                      }
