@@ -162,7 +162,7 @@ class AdminController extends ParentController
 	           }else{
 	           	$loans = Loan::where("user_id",$userId )->where(function ($q) {
     								$q->where('categories_id', LoanCategory::Free_Existing)
-    								->orWhere('categories_id', LoanCategory::Free_Existing);
+    								->orWhere('categories_id', LoanCategory::Premium_Existing);
 					})
 	           	->take($pageSize)->skip($off_set )->get(); 	
 	           }
