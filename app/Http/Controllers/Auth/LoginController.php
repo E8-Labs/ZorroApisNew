@@ -70,13 +70,23 @@ class LoginController extends Controller
 
             $is_new_user = false;
             $verificationCode =  $request['verification_code'];
+            $password = $request["password"];
+            if($password === null){
+              $password = \Config::get('constants.system_key');
+              if($verificationCode !== "1122"){
+                return response()->json([ "data" => null ,  'message' => "Invalid credentials" ,'success' => false], 200) ;
+              }
+            }
             // return "Hello Code " . $verificationCode;
             $email =  $request['email'];
             $deviceId =  $request['device_id'];
 
-            if($verificationCode === "1122"){
+            // if($verificationCode === "1122"){
 
                 $user = User::where( 'email', $email )->first();
+                // if($user !== null){
+                //   return response()->json([ "data" => null ,  'message' => "Email is already taken" ,'success' => false], 200) ;
+                // }
                 if ($user == null){
                   $is_new_user = true;
 
@@ -85,7 +95,7 @@ class LoginController extends Controller
                     if($user == null){ 
                         $user = new User;
                         $user->email = $email;
-                        $user->password = Hash::make(\Config::get('constants.system_key'));
+                        $user->password = Hash::make($password);//\Config::get('constants.system_key')
                         $user->save();
                     }else {
                         $user->email = $email;
@@ -98,7 +108,7 @@ class LoginController extends Controller
                    "client_id"     => '2',
                    "client_secret" => 'M4xjVt51FssZGsQQZWfMOV9V5clCsQWUAdJzzJGS',
                    "grant_type"    => 'password',
-                   "password"    => \Config::get('constants.system_key'),
+                   "password"    => $password,//\Config::get('constants.system_key'),
                    "username" => $email
                 ]);
 
@@ -146,9 +156,9 @@ class LoginController extends Controller
 
                 return $user;
                 return response()->json(['message' => "Verified successfully" ,'success' => true], 200) ;  
-          }else{
-              return response()->json(['message' => "Invalid Code" . $verificationCode ,'success' => false], 200) ;
-          }
+          // }else{
+          //     return response()->json(['message' => "Invalid Code" . $verificationCode ,'success' => false], 200) ;
+          // }
 
             
           }
