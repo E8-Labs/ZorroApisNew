@@ -94,7 +94,7 @@ class User extends Authenticatable
     }
 
     function isAdmin(){
-        if($this->email == "admin@zorro.com"){
+        if($this->email == env("admin@zorroapp.io")){
             return true;
         }
             return false;
