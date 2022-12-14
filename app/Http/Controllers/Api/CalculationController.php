@@ -212,7 +212,7 @@ class CalculationController extends ParentController
             $user = Auth::user();
             $ltv = 0;
 
-            $msg = $this->validatePremiumLoanRequest($creditScore,$downPayment, $loanAmount);
+            $msg = $this->validatePremiumLoanRequest($creditScore,$downPayment, $loanAmount + $downPayment);
             if($msg != "true"){
              return response()->json([$this->MSG  => $msg ,$this->SUCCESS => false], 200);
             }
@@ -466,7 +466,7 @@ class CalculationController extends ParentController
             $numberOfPayments = 360;
             $ltv = 0;
 
-            $msg = $this->validatePremiumLoanRequest($creditScore,$downPayment, $loanAmount);
+            $msg = $this->validatePremiumLoanRequest($creditScore,$downPayment, $loanAmount + $downPayment);
             if($msg != "true"){
              return response()->json([$this->MSG  => $msg ,$this->SUCCESS => false], 200);
             }

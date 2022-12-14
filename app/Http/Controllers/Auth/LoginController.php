@@ -77,30 +77,38 @@ class LoginController extends Controller
                 return response()->json([ "data" => null ,  'message' => "Invalid credentials" ,'success' => false], 200) ;
               }
             }
+
             // return "Hello Code " . $verificationCode;
             $email =  $request['email'];
             $deviceId =  $request['device_id'];
 
             // if($verificationCode === "1122"){
 
-                $user = User::where( 'email', $email )->first();
+                
+                try{
+                  $user = User::where( 'email', $email )->first();
+                }
+                catch(\Exception $e){
+                  return $e;
+                }
+// return "Here";
                 // if($user !== null){
                 //   return response()->json([ "data" => null ,  'message' => "Email is already taken" ,'success' => false], 200) ;
                 // }
                 if ($user == null){
                   $is_new_user = true;
 
-                    $user = User::where( 'email', $deviceId )->first();
+                    // $user = User::where( 'email', $deviceId )->first();
 
-                    if($user == null){ 
+                    // if($user == null){ 
                         $user = new User;
                         $user->email = $email;
                         $user->password = Hash::make($password);//\Config::get('constants.system_key')
                         $user->save();
-                    }else {
-                        $user->email = $email;
-                        $user->save();
-                    }
+                    // }else {
+                    //     $user->email = $email;
+                    //     $user->save();
+                    // }
                 }
 
                 $tokenRequest = $request->create('/oauth/token', 'POST', $request->all());

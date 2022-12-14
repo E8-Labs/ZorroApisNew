@@ -291,7 +291,11 @@ class AdminController extends ParentController
 
 	            foreach ($lenders as $lender) {
 	            	$temp =array( );
-	            	$temp = ['name' => $lender->name , 'count' =>  Loan::where('lender_id', $lender->id )->count() ];
+	            	$count = Loan::where('lender_id', $lender->id )->where(function($query){
+	            		$query->where('categories_id', LoanCategory::Premium_New)
+	            		->orWhere('categories_id', LoanCategory::Premium_Existing);
+	            	})->count();
+	            	$temp = ['name' => $lender->name , 'count' =>  $count ];
 	            	$lenderCounts[] =  $temp;
 	            	$lenderTotalCount += $temp['count'];
 	            }
@@ -329,6 +333,8 @@ class AdminController extends ParentController
 		        }
 	          }
     }
+
+    
 }
 
 

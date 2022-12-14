@@ -53,15 +53,14 @@ trait CalculationTrait {
         if($loan_amount >= 119999 && $loan_amount <= 548250){
             return LoanSection::ConformingFixed;
         }
-        else if($loan_amount > 548250 && $loan_amount <= 822376){
+        else if($loan_amount > 548250 && $loan_amount <= 970800){
             return LoanSection::HighBalanceFixed;
         }
-        else if($loan_amount >= 822376){
+        else if($loan_amount >= 970800){
             if($lender_id == 1){
                 return LoanSection::JmacManhattanJumbo;
             }
             return LoanSection::JMACJumboSmart;
-            
         }
     }
     else if($property_type == P_Type::Two_Unit){
