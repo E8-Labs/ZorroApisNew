@@ -224,6 +224,7 @@ function multipleSubSectionSelectionNewRez($section,$propertyType,$typeOfUse, $l
 
 function multipleSubSectionSelectionHomePoint($section,$propertyType,$typeOfUse, $ltv, $yearTerm, $loan_amount = 0, $loan_category = LoanCategory::Premium_Existing){
     // return "HomePoint";
+    // echo "HomePoint";
     $sub = array();
     
     
@@ -231,12 +232,16 @@ function multipleSubSectionSelectionHomePoint($section,$propertyType,$typeOfUse,
     //Loan Limit Adjustments
     
     if($section == LoanSection::ConformingFixed){
+        // echo "ConformingFixed";
       $ltvLimit =  new LoanSubSectionRow($section,LoanSubSection::Others, LoanSubSectionRow::Other);
       array_push($sub, $ltvLimit);
       
       //ARM Limits DU/LP ARM > 90 LTV (All Loan Amounts)
-      $armsLimit =  new LoanSubSectionRow($section,LoanSubSection::AllARMSType, LoanSubSectionRow::AllARMSType);
-      array_push($sub, $armsLimit);
+      if($yearTerm > 50){
+            // Add Arms
+            $armsLimit =  new LoanSubSectionRow($section,LoanSubSection::AllARMSType, LoanSubSectionRow::AllARMSType);
+            array_push($sub, $armsLimit);
+       }
       
       
       if($typeOfUse == LoanUseType::Investment){
@@ -244,18 +249,19 @@ function multipleSubSectionSelectionHomePoint($section,$propertyType,$typeOfUse,
             array_push($sub, $investment);
         }
 
+// echo  "LTV " . $ltv;
       if ($propertyType == P_Type::Condos && $yearTerm > 15 && $ltv > 75){
           $condo =  new LoanSubSectionRow($section,LoanSubSection::PropertyType, LoanSubSectionRow::Condo );
           array_push($sub, $condo);
       }
       
-      if ($propertyType == P_Type::Two_Unit){
+      if ($propertyType == P_Type::Two_Unit || $propertyType == P_Type::Three_Unit || $propertyType == P_Type::Four_Unit){
           $condo =  new LoanSubSectionRow($section,LoanSubSection::PropertyType, LoanSubSectionRow::TwoToFourUnits );
           array_push($sub, $condo);
         }
     
       if($typeOfUse == LoanUseType::Secondary){
-        $secondHome =  new LoanSubSectionRow($section,LoanSubSection::Occupancy, LoanSubSectionRow::SECOND_HOME_LTV_GREATER_75 );
+        $secondHome =  new LoanSubSectionRow($section,LoanSubSection::Occupancy, LoanSubSectionRow::Occ_2ndHome );
         array_push($sub, $secondHome);
       }
       
@@ -272,6 +278,62 @@ function multipleSubSectionSelectionHomePoint($section,$propertyType,$typeOfUse,
         else{
             
         }
+    }
+    else if($section == LoanSection::HighBalanceFixed){
+        // echo "HB " . $typeOfUse;
+        $ltvLimit =  new LoanSubSectionRow($section,LoanSubSection::Others, LoanSubSectionRow::Other);
+      array_push($sub, $ltvLimit);
+      
+      //ARM Limits DU/LP ARM > 90 LTV (All Loan Amounts)
+      if($yearTerm > 50){
+            // Add Arms
+            $armsLimit =  new LoanSubSectionRow($section,LoanSubSection::AllARMSType, LoanSubSectionRow::AllARMSType);
+            array_push($sub, $armsLimit);
+        }
+      
+      
+      
+      if($typeOfUse == LoanUseType::Investment){
+            $investment =  new LoanSubSectionRow($section,LoanSubSection::PropertyType, LoanSubSectionRow::RocketProInvestmentType );
+            array_push($sub, $investment);
+        }
+
+      if ($propertyType == P_Type::Condos && $yearTerm > 15 && $ltv > 75){
+          $condo =  new LoanSubSectionRow($section,LoanSubSection::PropertyType, LoanSubSectionRow::Condo );
+          array_push($sub, $condo);
+      }
+      
+      if ($propertyType == P_Type::Two_Unit || $propertyType == P_Type::Three_Unit || $propertyType == P_Type::Four_Unit){
+          $condo =  new LoanSubSectionRow($section,LoanSubSection::PropertyType, LoanSubSectionRow::TwoToFourUnits );
+          array_push($sub, $condo);
+        }
+    
+      if($typeOfUse == LoanUseType::Secondary){
+        // echo "Add Secondary";
+        $secondHome =  new LoanSubSectionRow($section,LoanSubSection::Occupancy, LoanSubSectionRow::Occ_2ndHome );
+        array_push($sub, $secondHome);
+      }
+      
+      
+      $loanLimit =  new LoanSubSectionRow($section,LoanSubSection::LoanAmountType, LoanSubSectionRow::RocketProLoanLimit);
+        array_push($sub, $loanLimit);
+        
+        
+        if($typeOfUse == LoanUseType::Primary){
+        //HomePointLoanLimitPrimaryOnly
+          $loanLimit =  new LoanSubSectionRow($section,LoanSubSection::LoanAmountType, LoanSubSectionRow::HomePointLoanLimitPrimaryOnly);
+          array_push($sub, $loanLimit);
+        }
+        else{
+            
+        }
+      // $ltvLimit =  new LoanSubSectionRow($section,LoanSubSection::Others, LoanSubSectionRow::Other);
+      //   array_push($sub, $ltvLimit);
+        
+        
+      //   //ARM Limits DU/LP ARM > 90 LTV (All Loan Amounts)
+      // $armsLimit =  new LoanSubSectionRow($section,LoanSubSection::AllARMSType, LoanSubSectionRow::AllARMSType);
+      // array_push($sub, $armsLimit);
     }
     
     if( $section == LoanSection::JMACJumboSmart){
@@ -306,19 +368,7 @@ function multipleSubSectionSelectionHomePoint($section,$propertyType,$typeOfUse,
             array_push($sub, $secondHome);
         }
     }
-    else if($section == LoanSection::HighBalanceFixed){
-      $ltvLimit =  new LoanSubSectionRow($section,LoanSubSection::Others, LoanSubSectionRow::Other);
-        array_push($sub, $ltvLimit);
-        
-        
-        //ARM Limits DU/LP ARM > 90 LTV (All Loan Amounts)
-      $armsLimit =  new LoanSubSectionRow($section,LoanSubSection::AllARMSType, LoanSubSectionRow::AllARMSType);
-      array_push($sub, $armsLimit);
-    }
-    
-    
-    
-    
+
     return $sub;
 }
 
@@ -327,15 +377,29 @@ function multipleSubSectionSelectionRocketPro($section,$propertyType,$typeOfUse,
     $sub = array();
     if($section == LoanSection::HighBalanceFixed){
       // return "Rocket Pro Highg balance";
-        $loanLimit =  new LoanSubSectionRow($section,LoanSubSection::PropertyType, LoanSubSectionRow::HighBalanceAddOn);
-        array_push($sub, $loanLimit);
+        // $loanLimit =  new LoanSubSectionRow($section,LoanSubSection::PropertyType, LoanSubSectionRow::HighBalanceAddOn);
+        // array_push($sub, $loanLimit);
 
 
         // These are the same adjustments that are for Comforming Loans
-        $loanLimit =  new LoanSubSectionRow($section,LoanSubSection::LoanAmountType, LoanSubSectionRow::RocketProLoanLimit);
-        array_push($sub, $loanLimit);
+        // $loanLimit =  new LoanSubSectionRow($section,LoanSubSection::LoanAmountType, LoanSubSectionRow::RocketProLoanLimit);
+        // array_push($sub, $loanLimit);
+
+        // These are the same adjustments that are for Comforming Loans
+        $loanLimitHBPurchaseAndRate =  new LoanSubSectionRow($section,LoanSubSection::PropertyType, LoanSubSectionRow::RocketProHighBalancePurchaseRateAndTerm);
+        array_push($sub, $loanLimitHBPurchaseAndRate);
+
         
-        return $sub;
+        
+        // return $sub;
+    }
+
+    if($section == LoanSection::HighBalanceFixed || $section == LoanSection::ConformingFixed){
+        if($yearTerm > 50){
+            // Add Arms
+            $armsLimit =  new LoanSubSectionRow($section,LoanSubSection::AllARMSType, LoanSubSectionRow::AllARMSType);
+            array_push($sub, $armsLimit);
+        }
     }
     
     
@@ -347,7 +411,9 @@ function multipleSubSectionSelectionRocketPro($section,$propertyType,$typeOfUse,
     array_push($sub, $ltvLimit);
     
     if($typeOfUse == LoanUseType::Secondary){
-        $secondHome =  new LoanSubSectionRow($section,LoanSubSection::Occupancy, LoanSubSectionRow::SECOND_HOME_LTV_GREATER_75 );
+        // echo "Second Home";
+        // die();
+        $secondHome =  new LoanSubSectionRow($section,LoanSubSection::Occupancy, LoanSubSectionRow::Occ_2ndHome );
         array_push($sub, $secondHome);
     }
     if($section == LoanSection::JMACJumboSmart){
@@ -386,6 +452,99 @@ function multipleSubSectionSelectionRocketPro($section,$propertyType,$typeOfUse,
     return $sub;
     
 }
+function multipleSubSectionSelectionJmac($section,$propertyType,$typeOfUse, $ltv, $yearTerm, $loan_amount = 0, $loan_category = LoanCategory::Premium_Existing){
+    $sub = array();
+    if($section == LoanSection::HighBalanceFixed || $section == LoanSection::ConformingFixed){
+
+        $l =  new LoanSubSectionRow($section,LoanSubSection::Others, LoanSubSectionRow::Other );
+        array_push($sub, $l);
+
+        if($typeOfUse == LoanUseType::Secondary){
+            $l =   new LoanSubSectionRow($section,LoanSubSection::Occupancy, LoanSubSectionRow::SECOND_HOME_LTV_EQ_LESS_75 );
+            array_push($sub, $l);
+        
+            $l =   new LoanSubSectionRow($section,LoanSubSection::Occupancy, LoanSubSectionRow::SECOND_HOME_LTV_GREATER_75 );
+            array_push($sub, $l);
+        }
+         
+         if($propertyType == P_Type::Two_Unit || $propertyType == P_Type::Three_Unit || $propertyType == P_Type::Four_Unit){
+            $l = new LoanSubSectionRow($section,LoanSubSection::PropertyType, LoanSubSectionRow::TwoToFourUnits );
+            array_push($sub, $l);
+         }
+
+
+        if($propertyType == P_Type::Condos){
+            $condo =  new LoanSubSectionRow($section,LoanSubSection::PropertyType, LoanSubSectionRow::Condo );
+            array_push($sub, $condo);
+         }
+
+         //Available in both
+         $nooltv =    new LoanSubSectionRow($section,LoanSubSection::Occupancy, LoanSubSectionRow::NOO_LTV_EQ_LESS_75 );
+         array_push($sub, $nooltv); 
+        
+    }
+    if($section == LoanSection::ConformingFixed){
+        $l = new LoanSubSectionRow($section,LoanSubSection::LoanAmountType, LoanSubSectionRow::RocketProLoanLimit );
+        array_push($sub, $l);
+    }
+    if($section == LoanSection::HighBalanceFixed){
+        if($yearTerm > 50){
+            // Add Arms
+            $armsLimit =  new LoanSubSectionRow($section,LoanSubSection::AllARMSType, LoanSubSectionRow::AllARMSType);
+            array_push($sub, $armsLimit);
+        }
+        
+    }
+    if($section == LoanSection::JmacManhattanJumbo){
+        $l =  new LoanSubSectionRow($section,LoanSubSection::Others, LoanSubSectionRow::Other );
+        array_push($sub, $l);
+        if($typeOfUse == LoanUseType::Secondary){
+            $secondHome =  new LoanSubSectionRow($section,LoanSubSection::Occupancy, LoanSubSectionRow::Occ_2ndHome );
+            array_push($sub, $secondHome);
+        }
+        if($propertyType == P_Type::Two_Unit || $propertyType == P_Type::Three_Unit || $propertyType == P_Type::Four_Unit){
+            // echo "Two Unit";
+            $l = new LoanSubSectionRow($section,LoanSubSection::PropertyType, LoanSubSectionRow::TwoToFourUnits );
+            array_push($sub, $l);
+        }
+        if($propertyType == P_Type::Condos){
+            $condo =  new LoanSubSectionRow($section,LoanSubSection::PropertyType, LoanSubSectionRow::Condo );
+            array_push($sub, $condo);
+        }
+        if($yearTerm >= 50){
+            // ARMS
+            $armsLimit =  new LoanSubSectionRow($section,LoanSubSection::AllARMSType, LoanSubSectionRow::AllARMSType);
+            array_push($sub, $armsLimit);
+        }
+    }
+    if($section == LoanSection::JMAC_LAGUNA_JUMBO_FIXED_ARMS_PURCHASE || $section == LoanSection::JMAC_LAGUNA_JUMBO_FIXED_ARMS_REFINANCE){
+        $l =  new LoanSubSectionRow($section,LoanSubSection::Others, LoanSubSectionRow::Other );
+        array_push($sub, $l);
+
+        $loanLimit =  new LoanSubSectionRow($section,LoanSubSection::LoanAmountType, LoanSubSectionRow::RocketProLoanLimit);
+        array_push($sub, $loanLimit);
+
+        if($typeOfUse == LoanUseType::Secondary){
+            $secondHome =  new LoanSubSectionRow($section,LoanSubSection::Occupancy, LoanSubSectionRow::Occ_2ndHome );
+            array_push($sub, $secondHome);
+        }
+        if($propertyType == P_Type::Two_Unit || $propertyType == P_Type::Three_Unit || $propertyType == P_Type::Four_Unit){
+            $l = new LoanSubSectionRow($section,LoanSubSection::PropertyType, LoanSubSectionRow::TwoToFourUnits );
+            array_push($sub, $l);
+        }
+        if($propertyType == P_Type::Condos){
+            echo "This is condo type";
+            $condo =  new LoanSubSectionRow($section,LoanSubSection::PropertyType, LoanSubSectionRow::Condo );
+            array_push($sub, $condo);
+        }
+        if( $typeOfUse == LoanUseType::Investment  ){
+            $condo =  new LoanSubSectionRow($section,LoanSubSection::PropertyType, LoanSubSectionRow::Jumbo_30Y_Investment_Property );
+            array_push($sub, $condo);
+        }
+
+    }
+    return $sub;
+}
 
 function multipleSubsectionsSelection($section,$propertyType,$typeOfUse, $ltv, $yearTerm, $loan_amount = 0, $loan_category = LoanCategory::Premium_Existing, $lender = 1){
     
@@ -401,6 +560,11 @@ function multipleSubsectionsSelection($section,$propertyType,$typeOfUse, $ltv, $
     if($lender == 3){
         // return "Greenhouse is active";
         return $this->multipleSubSectionSelectionHomePoint($section,$propertyType,$typeOfUse, $ltv, $yearTerm, $loan_amount, $loan_category);
+    }
+    if($lender == 1){
+        // return "JMAC";
+        // return "Greenhouse is active";
+        return $this->multipleSubSectionSelectionJmac($section,$propertyType,$typeOfUse, $ltv, $yearTerm, $loan_amount, $loan_category);
     }
     // return "Hello JMAC";
   if($propertyType == P_Type::Single_Family){
@@ -536,9 +700,9 @@ function multipleSubsectionsSelection($section,$propertyType,$typeOfUse, $ltv, $
         }
       }
         else if( $ltv <= 75   ){
-          $l =    new LoanSubSectionRow($section,LoanSubSection::Occupancy, LoanSubSectionRow::NOO_LTV_EQ_LESS_75 );
+            $l =    new LoanSubSectionRow($section,LoanSubSection::Occupancy, LoanSubSectionRow::NOO_LTV_EQ_LESS_75 );
         //   $sub[$i] = $l;
-        array_push($sub, $l);
+            array_push($sub, $l);
         //   $i++;
         }
         else if( $ltv >= 75.1 && $ltv <= 80  ){
@@ -970,14 +1134,14 @@ function multipleSubsectionsSelection($section,$propertyType,$typeOfUse, $ltv, $
             
                 $result->ltv = $this->getLtvToValue($ltv);
                 $result->creditScore = $this->getCreditScoreWithSection( $creditScore , $result->ltv , $lender_id , $section, $actual_loan_amount, $loan_category, $year);
-                // echo json_encode(["credit" => $result->creditScore]);
+                // echo json_encode(["credit" => $result->creditScore, "sec"=> $section]);
                 // die();
                 $csValue = 0;
                 foreach($result->creditScore as $cs){
                     if(isset($cs->value)){
                         if($cs->value < -900){
                             
-                            return ["status"=> false, "message" => "This loan is invalid for ltv " . $cs->ltv_from . " - " . $cs->ltv_to . " and credit score " . $cs->cs_from . " - " . $cs->cs_to . " and loan amount " . $cs->loan_from . " - " . $cs->loan_to . ". Please update your credit score and ltv to get the results."];
+                            return ["status"=> false, "message" => "This loan is invalid for ltv " . $cs->ltv_from . " - " . $cs->ltv_to . " and credit score " . $cs->cs_from . " - " . $cs->cs_to . " and loan amount " . $cs->loan_from . " - " . $cs->loan_to . ". Please update your credit score and ltv to get the results." ];
                         }
                         $csValue += $cs->value;
                         
@@ -1267,6 +1431,8 @@ function multipleSubsectionsSelection($section,$propertyType,$typeOfUse, $ltv, $
     foreach($creditScore as $cs){
         $csValue += $cs->value;
     }
+    // echo json_encode(["Adon" => $csValue, "Credit" => $creditScore, "sec" => $sections]);
+    // die();
         $rates = Rate::select("rate", "value", "id" )->where("lender_id", $lender_id)->where('day_type_id', 3)
         ->where("loan_section_id", $section->section)->where('year_type_id', $year_type_id)
         // ->where("loan_sub_section_id", $section->subSection)
@@ -1299,7 +1465,8 @@ $scores = [];
      foreach($sections as $section){
         //  echo  $section->subSection;
               if($section->subSection == LoanSubSection::PropertyType || $section->subSection == LoanSubSection::Occupancy  ){
-                //   echo "Occupancy = sec " . $section->section . " sub " . $section->subSection . " det " . $section->row . "\n";
+                // echo "sec" . $section->row;
+                  // echo "Occupancy = sec " . $section->row . " sub " . $section->subSection . " det " . $section->row . "Loan Category " . $loan_category . "\n";
           $cs = CreditScore::
                              where("cs_from", '<=',$creditScore)
                              ->where("cs_to", '>=',$creditScore)
@@ -1320,6 +1487,9 @@ $scores = [];
                             if($cs != NULL){
                                 $scores [] = $cs;
                             }
+                            // echo "Cs is below ltv ". $ltv . " cs " . $creditScore . " section " . $section->section . " sub " . $section->subSection . "Cate ". $loan_category;
+                            // echo json_encode($cs);
+                            // die();
         }
         else if($section->subSection == LoanSubSection::LoanAmountType){
           $query = CreditScore::where("cs_from", '<=',$creditScore)

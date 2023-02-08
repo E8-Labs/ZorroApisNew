@@ -44,8 +44,14 @@ const CondoSimple = "Condo";
     
     const Jumbo_30Y_Investment_Property = "Jumbo 30Y Investment Property";
     const RocketProRefinance = "R/T Refinance > 80";
+
+    
     
     const JumboLoanAmountGreaterThan1Million = 1000000; // 1 million
+
+
+    //Available in new Rate Sheet As of 06 Feb, 2023
+    const RocketProHighBalancePurchaseRateAndTerm = "High Balance Purchase/Rate & Term";
 
   public $row;
   public $subSection;

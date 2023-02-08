@@ -22,7 +22,7 @@ class CalculationController extends ParentController
     use CalculationTrait;
 
     var $LENDER = "lender";
-    var $lender_ids = [1,2,3]; // this is an update
+    var $lender_ids = [3]; // this is an update
     var $NEW_LOAN = "new_loan";
     var $LOW_COST_LOAN = "low_cost";
     var $LOW_RATE_LOAN = "low_rate";
@@ -282,8 +282,10 @@ class CalculationController extends ParentController
                 $lender_id = $lender->id;
                 $sheet_type = $this->getSectionFromLoan($loanAmount, $propretyTypeId, $lender_id);
                 // $sheet_type = LoanSection::JMAC_LAGUNA_JUMBO_FIXED_ARMS_PURCHASE;
-                //return "here";
+                // return "here " . $sheet_type;
                 $section= $this->multipleSubsectionsSelection($sheet_type , $propretyTypeId,$useTypeId, $ltv, $years, $loanAmount, LoanCategory::Premium_New, $lender_id);
+                // return $section;
+                // die();
                 // return "here";
                 // echo json_encode(["sections" => $section, "count" => count($section), "empty"=> empty($section)]);
                 // die();
@@ -303,8 +305,9 @@ class CalculationController extends ParentController
                         $det = $det . $sec->detail() . " LTV : " . $ltv . " cs " . $creditScore . "\n";
                     }
                  // echo  $det;
-            //     $cs = $this->getCreditScoreWithSection( $creditScore , $ltv , $lender_id , $section, $loanAmount, LoanCategory::Premium_Existing, $years);
-            //   return response()->json([$this->DATA => $cs, $this->SUCCESS => true,$this->MSG => $det . $sheet_type], 200);
+                 // die();
+              //   $cs = $this->getCreditScoreWithSection( $creditScore , $ltv , $lender_id , $section, $loanAmount, LoanCategory::Premium_New, $years);
+              // return response()->json([$this->DATA => $cs, $this->SUCCESS => true,$this->MSG => $det . $sheet_type, "LTV" => $ltv], 200);
 
                 // $section = LoanSection::JMAC_LAGUNA_JUMBO_FIXED_ARMS_PURCHASE;
                     // return "here";
@@ -321,45 +324,61 @@ class CalculationController extends ParentController
                     $resultOptimal_Response = $this->getLoanWithSection($section,$lender_id,$ltv,$monthly_private_mortgage_insurance,$creditScore, $loanAmount + $downPayment , $numberOfPayments,     $result_Response->low_rate_rate,"",$downPayment, $result_Response->low_rate_costOrCredit, $loanTypeId, LoanCategory::Premium_New, $years);
 
     
-            // r    eturn response()->json([$this->DATA => $resultOptimal_Response,$this->SUCCESS => true,$this->MSG => ""], 200);
+                    // return response()->json([$this->DATA => $resultOptimal_Response,$this->SUCCESS => true,$this->MSG => ""], 200);
     
                      $resultLowCost_Response = $this->getLoanWithSection($section,$lender_id,$ltv,$monthly_private_mortgage_insurance,$creditScore, $loanAmount + $downPayment , $numberOfPayments,    $result_Response->low_cost_rate,"",$downPayment,$result_Response->low_cost_costOrCredit, $loanTypeId, LoanCategory::Premium_New, $years);
 
     
                     if($sheet_type == LoanSection::JmacManhattanJumbo && $lender->id == 1){
-                      // echo "Calculate Purchase";
+                      // echo "Calculate Jumbo Other";
                           $section= $this->multipleSubsectionsSelection(LoanSection::JMAC_LAGUNA_JUMBO_FIXED_ARMS_PURCHASE , $propretyTypeId,$useTypeId, $ltv, $years,       $loanAmount);
                           // return $section;
                           // return "here 2";
-        $det = $det . "\nLender Name => " . $lender->name . "\n Sheet : " . LoanSection::JMAC_LAGUNA_JUMBO_FIXED_ARMS_PURCHASE . " \n LTV : " . $ltv . "\n";
+                    $det = $det . "\nLender Name => " . $lender->name . "\n Sheet : " . LoanSection::JMAC_LAGUNA_JUMBO_FIXED_ARMS_PURCHASE . " \n LTV : " . $ltv . "\n";
                     $count = count($section);
                     for($i = 0; $i < $count; $i++){
                         $sec = $section[$i];
                         $det = $det . $sec->detail() . " LTV : " . $ltv . " cs " . $creditScore . "\n";
                     }
-                // return  $det;
-                            // $this->getLoanWithSection($section,$lender_id,$ltv,$monthly_private_mortgage_insurance,$creditScore, $loanAmount + $downPayment , $numberOfPayments, $this->TEMP_LOW_RATE_LOAN_VALUE,"",$downPayment, "", $loanTypeId, LoanCategory::Premium_New, $years);
+                        
+
+                          // $cs = $this->getCreditScoreWithSection( $creditScore , $ltv , $lender_id , $section, $loanAmount, LoanCategory::Premium_New, $years);
+                          //   return response()->json([$this->DATA => $cs, $this->SUCCESS => true,$this->MSG => $det . $sheet_type, "LTV" => $ltv], 200);
+
                           $result1 = $this->getLoanWithSection($section,$lender_id,$ltv      ,$monthly_private_mortgage_insurance,$creditScore, $loanAmount + $downPayment , $numberOfPayments,         $this->TEMP_LOW_RATE_LOAN_VALUE,'',$downPayment, "", $loanTypeId, LoanCategory::Premium_New, $years);
-                          // return "here 2";
-                          // if (is_array($result)){ // if it is an error message then array
-                          //     if(isset($result["status"])){
-                          //       return response()->json([$this->DATA => $result,$this->SUCCESS => false,$this       ->MSG => ""], 200);
-                          //     }
+                          // if(is_array($result1)){
+                          //   echo "Array";
+                          //   die();
                           // }
-                          $resultOptimal1 = $this->getLoanWithSection($section,$lender_id,$ltv      ,$monthly_private_mortgage_insurance,$creditScore, $loanAmount + $downPayment , $numberOfPayments,         $result1->low_rate_rate,'',$downPayment, $result1      ->low_rate_costOrCredit, $loanTypeId, LoanCategory::Premium_New, $years);
-                          $resultLowCost1 = $this->getLoanWithSection($section,$lender_id,$ltv      ,$monthly_private_mortgage_insurance,$creditScore, $loanAmount + $downPayment , $numberOfPayments,         $result1->low_cost_rate,'',$downPayment,$result1      ->low_cost_costOrCredit, $loanTypeId, LoanCategory::Premium_New, $years);
-        // return "Purchase " . $resultOptimal1->data["rate"] . " | " . "Manhattan " .  $resultOptimal_Response->data["rate"];
-                          if($resultOptimal1->data["rate"] < $resultOptimal_Response->data["rate"]){ // if refinance rate       is lower 
-                        //   echo "Purchase is lower";
-                              $sheet_type = LoanSection::JMAC_LAGUNA_JUMBO_FIXED_ARMS_PURCHASE;
-                              $result_Response = $result1;
-                              $resultOptimal_Response = $resultOptimal1;
-                              $resultLowCost_Response = $resultLowCost1;
-                          }
+                          // else{
+                          //   echo "Not Array";
+                          //   die();
+                          // }
+                          if (is_array($result1) && isset($result1["status"]) && isset($result1["message"])){ // if it is an error message then array
+                           // no values for laguna
+                            //   if(isset($result1["status"])){
+                            //      return response()->json([$this->DATA => $result1,$this->SUCCESS => false,$this       ->MSG => ""], 200);
+                            //   }
+                           }
+                           else{
+                                $resultOptimal1 = $this->getLoanWithSection($section,$lender_id,$ltv      ,$monthly_private_mortgage_insurance,$creditScore, $loanAmount + $downPayment , $numberOfPayments,         $result1->low_rate_rate,'',$downPayment, $result1      ->low_rate_costOrCredit, $loanTypeId, LoanCategory::Premium_New, $years);
+                                $resultLowCost1 = $this->getLoanWithSection($section,$lender_id,$ltv      ,$monthly_private_mortgage_insurance,$creditScore, $loanAmount + $downPayment , $numberOfPayments,         $result1->low_cost_rate,'',$downPayment,$result1            ->low_cost_costOrCredit, $loanTypeId, LoanCategory::Premium_New, $years);
+                                if($resultOptimal1->data["rate"] < $resultOptimal_Response->data["rate"]){ // if refinance rate       is lower 
+                        //         echo "Purchase is lower";
+                                    $sheet_type = LoanSection::JMAC_LAGUNA_JUMBO_FIXED_ARMS_PURCHASE;
+                                    $result_Response = $result1;
+                                    $resultOptimal_Response = $resultOptimal1;
+                                    $resultLowCost_Response = $resultLowCost1;
+                                }
+                           }
+                          
                     }
+
+                        // return response()->json(["Sheet" => $sheet_type ,"lowest"=> $lowest ,"res_optimal" => $resultOptimal_Response, "res_LowCost" => $resultLowCost_Response, "result_Response" => $result_Response]);
     
                      if($lowest == false && $resultOptimal_Response->data["rate"] != $resultLowCost_Response->data["rate"] && $resultLowCost_Response->data["rate"] != $result_Response->data["rate"]){//$resultOptimal_Response->data["rate"]
                           // $det = $det . " \nNew Lender \n";
+                     
                             $lowest = true;
                             $resultOptimal = $resultOptimal_Response;
                             $resultLowCost = $resultLowCost_Response;
@@ -369,6 +388,7 @@ class CalculationController extends ParentController
                         }
                         else if($resultOptimal_Response->data["rate"] != $resultLowCost_Response->data["rate"] && $resultLowCost_Response->data["rate"] != $result_Response->data["rate"] && $resultOptimal_Response->data["rate"] < $resultOptimal->data["rate"]){ 
                           $det = $det . " \n" . $lender_Response->name . " > " . $lender->name . "\n"; 
+
                           $lowest = true;
                             $resultOptimal = $resultOptimal_Response;
                             $resultLowCost = $resultLowCost_Response;
@@ -376,6 +396,20 @@ class CalculationController extends ParentController
                             $sheet_type_Response = $sheet_type;
                             $lender_Response = $lender;
                         }
+                        else{
+                            $errorsForLender[] = "Loan is invalid. Lowest Value is the greatest value so can not calculate further " . $sheet_type;
+                            // $errorsForLender[] = $result_Response->creditScore;
+                            $errorArray[$lender->name] = $errorsForLender;
+                            // return response()->json(["message" => "Loan is invalid"]);
+                        }
+                            $allLenderRates[$lender->name] = [
+                                'section' => $section,
+                                "sheet" => $sheet_type_Response,
+                                 $this->OPTIMAL_LOAN =>  $result->data,
+                                $this->LOW_RATE_LOAN =>  $resultOptimal->data,  
+                                $this->LOW_COST_LOAN => $resultLowCost->data,
+                                // "LenderAddOns" => $lenderAddOns
+                            ];
                     }
                     $errorArray[$lender->name] = $errorsForLender;
                 }
@@ -397,6 +431,8 @@ class CalculationController extends ParentController
               // $result == optimal 
               // return "here 2";
               try{
+                // echo $resultOptimal;
+                // die();
                 $loan_option_id = LoanOption::LowRate; $loan_parent_id = null;
              $loan = Loan::saveLoan($user->id,LoanCategory::Premium_New, $lender_id,$resultOptimal->requiredMonthlyPayment,(float)$resultOptimal->data["rate"], $resultOptimal->totalAmountToPay, $downPayment, $creditScore,$loanAmount, $zipCode,$propretyTypeId,$loanTypeId, $useTypeId,
               $loan_option_id, $loan_parent_id, $propertyValue );
@@ -412,7 +448,8 @@ class CalculationController extends ParentController
               $loan_option_id, $loan_parent_id, $propertyValue );
               }
               catch(\Exception $e){
-                return response()->json([$this->DATA => NULL,$this->SUCCESS => true,$this->MSG => "No Matching Loan Found", "Exception" => $e->getMessage()], 200);
+                // echo $e;
+                // return response()->json([$this->DATA => NULL,$this->SUCCESS => true,$this->MSG => "No Matching Loan Found", "Exception" => $e], 200);
               }
              // return $resultOptimal->data;
               
@@ -423,7 +460,8 @@ class CalculationController extends ParentController
                         $this->LOW_COST_LOAN => $resultLowCost->data,
                         $this->LENDER => $lender_Response,
                       $this->NEW_LOAN => $result->data, // WILL DELETE IN FUTURE
-                      "adjustments" => $result->creditScore
+                      "adjustments" => $result->creditScore,
+                      "AllLenderRates" => $allLenderRates,
 
                      ];
              
@@ -530,6 +568,7 @@ class CalculationController extends ParentController
             $det = "";
             $lenderAddOns = array();
             $allLenderRates = array();
+
             
             $errorArray = array();
             foreach($lenders as $lender){
@@ -564,8 +603,9 @@ class CalculationController extends ParentController
                 // }
                 // 
                 // return  $det;
-            //   $cs = $this->getCreditScoreWithSection( $creditScore , $ltv , $lender_id , $section, $loanAmount, LoanCategory::Premium_Existing, $years);
-            //   return response()->json([$this->DATA => $cs, $this->SUCCESS => true,$this->MSG => $det . $sheet_type], 200);
+              $cs = $this->getCreditScoreWithSection( $creditScore , $ltv , $lender_id , $section, $loanAmount, LoanCategory::Premium_Existing, $years);
+              $lenderAddOns[$lender->name] = $cs;
+              // return response()->json([$this->DATA => $cs, $this->SUCCESS => true,$this->MSG => $det . $sheet_type], 200);
             //   return "Downpayment is " . $downPayment;
                 $result = $this->getLoanWithSection($section,$lender_id,$ltv,$monthly_private_mortgage_insurance,$creditScore, $loanAmount , $numberOfPayments, $this->TEMP_LOW_RATE_LOAN_VALUE,$loan_start_date,$downPayment, 0, $loanTypeId, LoanCategory::Premium_Existing, $years);
                 $lenderAddOns[$lender->name] = $result;
@@ -583,23 +623,28 @@ class CalculationController extends ParentController
                 
                       if($sheet_type == LoanSection::JmacManhattanJumbo && $lender->id == 1){
                       
-                          $section= $this->multipleSubsectionsSelection(LoanSection      ::JMAC_LAGUNA_JUMBO_FIXED_ARMS_REFINANCE , $propretyTypeId,$useTypeId, $ltv, $years,       $loanAmount);
+                          $section= $this->multipleSubsectionsSelection(LoanSection::JMAC_LAGUNA_JUMBO_FIXED_ARMS_REFINANCE , $propretyTypeId,$useTypeId, $ltv, $years,       $loanAmount);
         
                           $result1 = $this->getLoanWithSection($section,$lender_id,$ltv      ,$monthly_private_mortgage_insurance,$creditScore, $loanAmount , $numberOfPayments,         $this->TEMP_LOW_RATE_LOAN_VALUE,$loan_start_date,$downPayment, 0, $loanTypeId, LoanCategory::Premium_Existing, $years);
-                          // if (is_array($result)){ // if it is an error message then array
-                          //     if(isset($result["status"])){
-                          //       return response()->json([$this->DATA => $result,$this->SUCCESS => false,$this       ->MSG => ""], 200);
-                          //     }
-                          // }
-                          $resultOptimal1 = $this->getLoanWithSection($section,$lender_id,$ltv      ,$monthly_private_mortgage_insurance,$creditScore, $loanAmount , $numberOfPayments,         $result1->low_rate_rate,$loan_start_date,$downPayment, $result1      ->low_rate_costOrCredit, $loanTypeId, LoanCategory::Premium_Existing, $years);
-                          $resultLowCost1 = $this->getLoanWithSection($section,$lender_id,$ltv      ,$monthly_private_mortgage_insurance,$creditScore, $loanAmount , $numberOfPayments,         $result1->low_cost_rate,$loan_start_date,$downPayment,$result1      ->low_cost_costOrCredit, $loanTypeId, LoanCategory::Premium_Existing, $years);
-        
-                          if($resultOptimal1->data["rate"] < $resultOptimal->data["rate"]){ // if refinance rate       is lower 
-                               $sheet_type = LoanSection::JMAC_LAGUNA_JUMBO_FIXED_ARMS_REFINANCE;
-                              $result = $result1;
-                              $resultOptimal = $resultOptimal1;
-                              $resultLowCost = $resultLowCost1;
-                          }
+                        //   return json_encode($result1);
+                           if (is_array($result1) && isset($result1["status"]) && isset($result1["message"])){ // if it is an error message then array
+                           // no values for laguna
+                            //   if(isset($result1["status"])){
+                            //      return response()->json([$this->DATA => $result1,$this->SUCCESS => false,$this       ->MSG => ""], 200);
+                            //   }
+                           }
+                           else{
+                               $resultOptimal1 = $this->getLoanWithSection($section,$lender_id,$ltv      ,$monthly_private_mortgage_insurance,$creditScore, $loanAmount , $numberOfPayments,         $result1->low_rate_rate,$loan_start_date,$downPayment, $result1      ->low_rate_costOrCredit, $loanTypeId, LoanCategory::Premium_Existing, $years);
+                                $resultLowCost1 = $this->getLoanWithSection($section,$lender_id,$ltv      ,$monthly_private_mortgage_insurance,$creditScore, $loanAmount , $numberOfPayments,         $result1->low_cost_rate,$loan_start_date,$downPayment,$result1            ->low_cost_costOrCredit, $loanTypeId, LoanCategory::Premium_Existing, $years);
+                
+                                if($resultOptimal1->data["rate"] < $resultOptimal->data["rate"]){ // if refinance rate       is lower 
+                                     $sheet_type = LoanSection::JMAC_LAGUNA_JUMBO_FIXED_ARMS_REFINANCE;
+                                    $result = $result1;
+                                    $resultOptimal = $resultOptimal1;
+                                    $resultLowCost = $resultLowCost1;
+                                }
+                           }
+                          
                     }
                     $det = $det . "\n " . $lender->name . " => " . $resultOptimal->data["rate"];
                     
@@ -683,7 +728,7 @@ class CalculationController extends ParentController
                       $this->LOW_RATE_LOAN =>  $resultOptimal_Response->data,  
                       $this->LOW_COST_LOAN => $resultLowCost_Response->data, 
                       $this->LENDER => $lender_Response,
-                       "details" => $det];
+                       "All Lender Rates" => $allLenderRates];
                       // $this->NEW_LOAN => $result->data]; // WILL DELETE IN FUTURE
             return response()->json([$this->DATA => $data, $this->SUCCESS => true, $this->MSG => ""], 200);
           }
