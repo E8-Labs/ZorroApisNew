@@ -50,13 +50,13 @@ trait CalculationTrait {
 
     function getSectionFromLoan($loan_amount, $property_type, $lender_id = 1){
     if($property_type == P_Type::Single_Family){
-        if($loan_amount >= 119999 && $loan_amount <= 548250){
+        if($loan_amount >= 100000 && $loan_amount <= 726200){
             return LoanSection::ConformingFixed;
         }
-        else if($loan_amount > 548250 && $loan_amount <= 970800){
+        else if($loan_amount > 726201 && $loan_amount <= 1089300){
             return LoanSection::HighBalanceFixed;
         }
-        else if($loan_amount >= 970800){
+        else if($loan_amount >= 1089301){
             if($lender_id == 1){
                 return LoanSection::JmacManhattanJumbo;
             }
@@ -64,13 +64,13 @@ trait CalculationTrait {
         }
     }
     else if($property_type == P_Type::Two_Unit){
-        if($loan_amount >= 119999 && $loan_amount <= 702001){
+        if($loan_amount >= 100000 && $loan_amount <= 929850){
             return LoanSection::ConformingFixed;
         }
-        else if($loan_amount > 702001 && $loan_amount <= 1243050){
+        else if($loan_amount > 929851 && $loan_amount <= 1394775){
             return LoanSection::HighBalanceFixed;
         }
-        else if($loan_amount >= 1243050){
+        else if($loan_amount >= 1394776){
             if($lender_id == 1){
                 return LoanSection::JmacManhattanJumbo;
             }
@@ -78,13 +78,13 @@ trait CalculationTrait {
         }
     }
     else if($property_type == P_Type::Three_Unit){
-        if($loan_amount >= 119999 && $loan_amount <= 848500){
+        if($loan_amount >= 100000 && $loan_amount <= 1123900){
             return LoanSection::ConformingFixed;
         }
-        else if($loan_amount > 848500 && $loan_amount <= 1502475){
+        else if($loan_amount > 1123901 && $loan_amount <= 1685850){
             return LoanSection::HighBalanceFixed;
         }
-        else if($loan_amount >= 1502475){
+        else if($loan_amount >= 1685851){
             if($lender_id == 1){
                 return LoanSection::JmacManhattanJumbo;
             }
@@ -92,13 +92,13 @@ trait CalculationTrait {
         }
     }
     else if($property_type == P_Type::Four_Unit){
-        if($loan_amount >= 119999 && $loan_amount <= 1054500){
+        if($loan_amount >= 100000 && $loan_amount <= 1396800){
             return LoanSection::ConformingFixed;
         }
-        else if($loan_amount >= 1054501 && $loan_amount <= 1867275){
+        else if($loan_amount >= 1396801 && $loan_amount <= 2095200){
             return LoanSection::HighBalanceFixed;
         }
-        else if($loan_amount >= 1867275){
+        else if($loan_amount >= 2095201){
             if($lender_id == 1){
                 return LoanSection::JmacManhattanJumbo;//JMAC_LAGUNA_JUMBO_FIXED_ARMS_REFINANCE;//
             }
