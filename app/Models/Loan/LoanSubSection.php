@@ -14,6 +14,7 @@ class LoanSubSection extends Model
     const LoanAmountType = 4;
     const YearRangeType = 5;
     const AllARMSType = 6;
+    const EscrowWaiver = 7;
 
 
         static function valueOf($section){
@@ -39,6 +40,10 @@ class LoanSubSection extends Model
                 
                 case 6:
                 return "All ARMS";
+                break;
+
+                case 7:
+                return "Escrow Waiver";
                 break;
                 
             default:

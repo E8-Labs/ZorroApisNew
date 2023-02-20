@@ -210,7 +210,7 @@ function multipleSubSectionSelectionNewRez($section,$propertyType,$typeOfUse, $l
             }
             //Investment
             if($typeOfUse == LoanUseType::Investment){
-                $investment =  new LoanSubSectionRow($section,LoanSubSection::PropertyType, LoanSubSectionRow::RocketProInvestmentType );
+                $investment =  new LoanSubSJmcectionRow($section,LoanSubSection::PropertyType, LoanSubSectionRow::RocketProInvestmentType );
                 array_push($sub, $investment);
             }
             
@@ -458,6 +458,8 @@ function multipleSubSectionSelectionJmac($section,$propertyType,$typeOfUse, $ltv
 
         $l =  new LoanSubSectionRow($section,LoanSubSection::Others, LoanSubSectionRow::Other );
         array_push($sub, $l);
+        
+        
 
         if($typeOfUse == LoanUseType::Secondary){
             $l =   new LoanSubSectionRow($section,LoanSubSection::Occupancy, LoanSubSectionRow::SECOND_HOME_LTV_EQ_LESS_75 );
@@ -477,10 +479,14 @@ function multipleSubSectionSelectionJmac($section,$propertyType,$typeOfUse, $ltv
             $condo =  new LoanSubSectionRow($section,LoanSubSection::PropertyType, LoanSubSectionRow::Condo );
             array_push($sub, $condo);
          }
+         
+         if($typeOfUse == LoanUseType::Investment){
+            //Available in both but only for investment
+             $nooltv =    new LoanSubSectionRow($section,LoanSubSection::Occupancy, LoanSubSectionRow::NOO_LTV_EQ_LESS_75 );
+             array_push($sub, $nooltv);
+         }
 
-         //Available in both
-         $nooltv =    new LoanSubSectionRow($section,LoanSubSection::Occupancy, LoanSubSectionRow::NOO_LTV_EQ_LESS_75 );
-         array_push($sub, $nooltv); 
+          
         
     }
     if($section == LoanSection::ConformingFixed){
@@ -533,7 +539,7 @@ function multipleSubSectionSelectionJmac($section,$propertyType,$typeOfUse, $ltv
             array_push($sub, $l);
         }
         if($propertyType == P_Type::Condos){
-            echo "This is condo type";
+            // echo "This is condo type";
             $condo =  new LoanSubSectionRow($section,LoanSubSection::PropertyType, LoanSubSectionRow::Condo );
             array_push($sub, $condo);
         }
@@ -541,6 +547,14 @@ function multipleSubSectionSelectionJmac($section,$propertyType,$typeOfUse, $ltv
             $condo =  new LoanSubSectionRow($section,LoanSubSection::PropertyType, LoanSubSectionRow::Jumbo_30Y_Investment_Property );
             array_push($sub, $condo);
         }
+        if($section == LoanSection::JMAC_LAGUNA_JUMBO_FIXED_ARMS_PURCHASE){
+            $pur =  new LoanSubSectionRow($section,LoanSubSection::Others, LoanSubSectionRow::Purchase );
+            array_push($sub, $pur);
+            // echo "Purchase ad on added";
+        }
+        
+        $escrow =  new LoanSubSectionRow($section,LoanSubSection::EscrowWaiver, LoanSubSectionRow::EscrowWaiver );
+        array_push($sub, $escrow);
 
     }
     return $sub;
@@ -1452,6 +1466,27 @@ function multipleSubsectionsSelection($section,$propertyType,$typeOfUse, $ltv, $
         return $rates->values()->all();
       // }
    }
+   
+   function removeDuplicateKeysFromArray($array, $keep_key_assoc = false){
+    $duplicate_keys = array();
+    $tmp = array();       
+
+    foreach ($array as $key => $val){
+        // convert objects to arrays, in_array() does not support objects
+        if (is_object($val))
+            $val = (array)$val;
+
+        if (!in_array($val, $tmp))
+            $tmp[] = $val;
+        else
+            $duplicate_keys[] = $key;
+    }
+
+    foreach ($duplicate_keys as $key)
+        unset($array[$key]);
+
+    return $keep_key_assoc ? $array : array_values($array);
+}
 
     function getCreditScore($creditScore,$ltv,$lender_id ){ // here I have to inject subsection and section
     return CreditScore::where("cs_from",$creditScore)->where("ltv_to", $ltv )->where("lender_id", $lender_id)->first();
@@ -1464,7 +1499,8 @@ $scores = [];
 
      foreach($sections as $section){
         //  echo  $section->subSection;
-              if($section->subSection == LoanSubSection::PropertyType || $section->subSection == LoanSubSection::Occupancy  ){
+              if($section->subSection == LoanSubSection::PropertyType || $section->subSection == LoanSubSection::Occupancy ){
+                //   echo "Here Occupancy Property";
                 // echo "sec" . $section->row;
                   // echo "Occupancy = sec " . $section->row . " sub " . $section->subSection . " det " . $section->row . "Loan Category " . $loan_category . "\n";
           $cs = CreditScore::
@@ -1492,6 +1528,7 @@ $scores = [];
                             // die();
         }
         else if($section->subSection == LoanSubSection::LoanAmountType){
+            // echo "Here Loan Amount";
           $query = CreditScore::where("cs_from", '<=',$creditScore)
                                 ->where("cs_to", '>=',$creditScore)
                                     ->where("lender_id", $lender_id)
@@ -1504,7 +1541,7 @@ $scores = [];
                                           $q->where('loan_category', $loan_category)
                                           ->orWhere('loan_category', LoanCategory::Any);
                                     });
-                                    $cscores = $query->get();
+                                    $cscores = $query->distinct()->get();
                             if($cscores != NULL){
                               foreach($cscores as $cs){
                                 if($cs != NULL){
@@ -1536,6 +1573,7 @@ $scores = [];
         //                     }
         // }
         else if($section->subSection == LoanSubSection::YearRangeType){
+            // echo "Here Year Type";
           $query = CreditScore::where("cs_from", '<=',$creditScore)
                                 ->where("cs_to", '>=',$creditScore)
                                     ->where("lender_id", $lender_id)
@@ -1550,12 +1588,14 @@ $scores = [];
                                           $q->where('loan_category', $loan_category)
                                           ->orWhere('loan_category', LoanCategory::Any);
                                     });
-                                    $cs = $query->first();
+                                    $cs = $query->distinct()->first();
                             if($cs != NULL){
                                 $scores [] = $cs;
                             }
         }
         else{
+            // echo "Here All other";
+            // echo " Loan section is None of the above ". $section->subSection;
             $query = CreditScore::
                               where("cs_from", '<=',$creditScore)
                              ->where("cs_to", '>=',$creditScore)
@@ -1564,12 +1604,25 @@ $scores = [];
                             ->where("lender_id", $lender_id)
                           ->where("loan_section_id", $section->section)
                           ->where("loan_sub_section_id", $section->subSection)
+                          
                           ->where("loan_to", '>=', $loan_amount )
                         ->where("loan_from", '<=', $loan_amount)
-                          ->where(function($q) use($loan_category){
-                              return $q->where('loan_category', $loan_category)
-                              ->orWhere('loan_category', LoanCategory::Any);
-                          })
+                        ->where(function($q) use($loan_category){
+                                    return $q->where('loan_category', $loan_category)
+                                    ->orWhere('loan_category', LoanCategory::Any);
+                                });
+                          
+                        //   ->when(strcmp("Purchase",$section->row) == 0, function($q) use($section){ // check If Purchase
+                        //         $q->where("detail", 'LIKE','%' . $section->row  . '%');
+                              
+                        //   })
+                        //   ->when(strcmp("Purchase",$section->row) != 0, function($q) use($section, $loan_category){ // check If Not Purchase
+                        //         $q->where(function($q) use($loan_category){
+                        //             return $q->where('loan_category', $loan_category)
+                        //             ->orWhere('loan_category', LoanCategory::Any);
+                        //         });
+                              
+                        //   })
                           ;
                            
                             // if($section->row == LoanSubSectionRow::RocketProLoanLimit){
@@ -1594,7 +1647,7 @@ $scores = [];
                             // }
                             
                             
-                            $cscores = $query->get();
+                            $cscores = $query->distinct()->get();
                             if($cscores != NULL){
                               foreach($cscores as $cs){
                                 if($cs != NULL){
@@ -1610,6 +1663,7 @@ $scores = [];
     // $scores["sub section"] = $section->subSection;
     // echo json_encode(["adons" => $scores]);
     // die();
+    $scores = $this->removeDuplicateKeysFromArray($scores);
       return $scores;
 
      // if($section->subSection == LoanSubSection::Others ){

@@ -21,6 +21,7 @@ class LoanSubSectionRow extends Model
   const LagunaLoanAmountCondition = "Loan Amt >= 1 Million";
 const CondoSimple = "Condo";
   const Purchase = "Purchase";
+  const EscrowWaiver = "Escrow Waiver";
   const Occ_2ndHome = "Occ: 2nd Home";
     const Other = "Other";
     const Single_Family = "Single Family";
